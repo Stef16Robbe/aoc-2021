@@ -52,8 +52,8 @@ fn main() {
 
         match movement.direction {
             Direction::Forward => move_forward(&mut horizontal, &mut depth, &aim, &movement.amount),
-            Direction::Down => aim += movement.amount as i32,
-            Direction::Up => aim -= movement.amount as i32
+            Direction::Down => aim += movement.amount,
+            Direction::Up => aim -= movement.amount
         };
 
     }
