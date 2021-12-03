@@ -1,55 +1,54 @@
 use std::fs;
 
-fn get_bit(entry: &String, pos: &usize) -> u8 {
-    entry.chars().nth(*pos).unwrap().to_string().parse::<u8>().unwrap()
+fn edit_entries(entries: &mut Vec<Vec<char>>, more: bool) {
+    for i in 0..entries[0].len() {
+        if entries.len() == 1 {
+            return;
+        }
+
+        let bits: Vec<char> = entries.iter().map(|val| val[i]).collect();
+
+        // https://stackoverflow.com/a/55969946/10503012
+        let zeroes: usize = bits.iter().filter(|bit| **bit == '0').count();
+        let ones: usize = bits.iter().filter(|bit| **bit == '1').count();
+
+        let higher_count = if zeroes > ones {
+            0u32
+        } else {
+            1u32
+        };
+    
+        if more {
+            // https://stackoverflow.com/questions/41380367/parsing-a-char-to-u32/41380557#41380557
+            entries.retain(|e| e[i].to_digit(10).unwrap() == higher_count);
+        } else {
+            entries.retain(|e| e[i].to_digit(10).unwrap() != higher_count);
+        };
+    }
 }
 
 fn main() {
     let file = fs::read_to_string("input.txt").unwrap();
 
-    let mut amount_zero = 0u32;
-    let mut amount_one = 0u32;
-    let mut gamma_rate_str: String = "".to_string();
-    let mut epsilon_rate_str: String = "".to_string();
-    let mut entries: Vec<String> = Vec::new();
-    let mut byte_size = 0u8;
-
+    let mut ratings: Vec<Vec<char>> = vec![];
+    
     for line in file.split("\n") {
         if line == "" { continue; }
-        
-        if byte_size == 0 {
-            byte_size = line.len() as u8;
-        }
-
-        let entry = line.parse::<String>().unwrap();
-        entries.push(entry);
+        ratings.push(line.chars().collect::<Vec<char>>());
     };
 
-    for i in 0..byte_size as usize {
-        for entry in &entries {
-            match get_bit(&entry, &i) {
-                0 => amount_zero += 1,
-                1 => amount_one += 1,
-                _ => panic!("Something went seriously wrong while reading input.txt...")
-            };
-        };
+    let mut oxygen_ratings = ratings.to_vec();
+    let mut scrubber_ratings = ratings.to_vec();
+    edit_entries(&mut oxygen_ratings, true);
+    edit_entries(&mut scrubber_ratings, false);
 
-        if amount_zero > amount_one {
-            gamma_rate_str += "0";
-            epsilon_rate_str += "1";
-        } else {
-            gamma_rate_str += "1";
-            epsilon_rate_str += "0";
-        };
-        
-        amount_zero = 0;
-        amount_one = 0;
-    };
+    // https://gist.github.com/jimmychu0807/9a89355e642afad0d2aeda52e6ad2424
+    let oxygen_str = oxygen_ratings[0].iter().collect::<String>();
+    let scrubber_str = scrubber_ratings[0].iter().collect::<String>();
+    let oxygen = isize::from_str_radix(&oxygen_str, 2).unwrap() as u32;
+    let scrubber = isize::from_str_radix(&scrubber_str, 2).unwrap() as u32;
 
-    let gamma_rate = isize::from_str_radix(&gamma_rate_str, 2).unwrap() as u32;
-    let epsilon_rate = isize::from_str_radix(&epsilon_rate_str, 2).unwrap() as u32;
-    let power_consumption: u32 = gamma_rate * epsilon_rate;
+    println!("oxygen: {} * scrubber: {} = {}", oxygen_str, scrubber_str, oxygen * scrubber)
 
-    println!("gamma * epsilon ({} * {}) = {}", gamma_rate, epsilon_rate, power_consumption)
-    // 1071734
+    // 6124992
 }
