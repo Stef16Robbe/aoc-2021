@@ -17,12 +17,12 @@ fn main() {
     // https://stackoverflow.com/a/57637602/10503012
     // https://doc.rust-lang.org/std/ops/struct.Range.html
     for _ in 0..80 {
-        for fish in 0..fishes.len() {
-            if fishes[fish] == 0 {
+        for i in 0..fishes.len() {
+            if fishes[i] == 0 {
                 fishes.push(8);
-                fishes[fish] = 7;
+                fishes[i] = 7;
             }
-            fishes[fish] -= 1;
+            fishes[i] -= 1;
         }
     }
 
