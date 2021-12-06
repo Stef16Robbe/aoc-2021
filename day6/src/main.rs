@@ -1,30 +1,47 @@
 use std::fs::File;
+use std::collections::HashMap;
 use std::io::{BufRead, BufReader};
+
+// https://github.com/emilyskidsister/aoc/blob/main/p2021_06/src/lib.rs#L3
+pub fn count_fishes(mut state: u8, days: usize, memo: &mut HashMap<(u8, usize), usize>) -> usize {
+    if let Some(result) = memo.get(&(state, days)) {
+        return *result;
+    }
+
+    let orig_state = state;
+    let mut count = 1;
+    for d in 0..days {
+        if state == 0 {
+            count += count_fishes(8, days - d - 1, memo);
+            state = 7;
+        }
+        state -= 1;
+    }
+
+    memo.insert((orig_state, days), count);
+    count
+}
+
 
 fn main() {
     let mut file = BufReader::new(File::open("input.txt").unwrap());
     let mut numbers = String::new();
     file.read_line(&mut numbers).unwrap();
 
-    let mut fishes: Vec<u8>;
+    let fishes: Vec<u8>;
 
     fishes = numbers
         .trim()
-        .split(",")
-        .map(|p| p.parse().unwrap())
+        .split(',')
+        .map(|n| n.parse().unwrap())
         .collect();
 
-    // https://stackoverflow.com/a/57637602/10503012
-    // https://doc.rust-lang.org/std/ops/struct.Range.html
-    for _ in 0..80 {
-        for i in 0..fishes.len() {
-            if fishes[i] == 0 {
-                fishes.push(8);
-                fishes[i] = 7;
-            }
-            fishes[i] -= 1;
-        }
+    let mut count = 0;
+    let mut memo = HashMap::new();
+    for fish in &fishes {
+        let count_from_fish = count_fishes(*fish, 256, &mut memo);
+        count += count_from_fish;
     }
 
-    println!("{:?}", fishes.len());
+    println!("{:?}", count);
 }
